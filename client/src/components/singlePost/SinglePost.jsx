@@ -9,11 +9,13 @@ export default function SinglePost() {
   const location = useLocation();
   const path = location.pathname.split("/")[2];
   const [post, setPost] = useState({});
+  const [comments, setComments] = useState([]);
   const PF = "http://localhost:5000/images/";
   const { user } = useContext(Context);
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [updateMode, setUpdateMode] = useState(false);
+  const [commentContent, setCommentContent] = useState("");
 
   useEffect(() => {
     const getPost = async () => {
@@ -21,6 +23,7 @@ export default function SinglePost() {
       setPost(res.data);
       setTitle(res.data.title);
       setDesc(res.data.desc);
+      setComments(res.data.comments);
     };
     getPost();
   }, [path]);
@@ -42,6 +45,19 @@ export default function SinglePost() {
         desc,
       });
       setUpdateMode(false)
+    } catch (err) {}
+  };
+  
+  const handleCommentSubmit = async e => {
+    e.preventDefault();
+    try {
+      const res = await axios.post(`/posts/${post._id}/comments`, {
+        username: user.username,
+        content: commentContent
+      });
+      console.log("comment post response:", res.data);
+      setCommentContent("");
+      setComments([...comments, res.data]);
     } catch (err) {}
   };
 
@@ -101,6 +117,21 @@ export default function SinglePost() {
             Update
           </button>
         )}
+      </div>
+      <div className="singlePostWrapper">
+        <h3>Comments</h3>
+        <form onSubmit={handleCommentSubmit}>
+          <div className="">
+            <textarea
+              value={commentContent}
+              onChange={(e) => setCommentContent(e.target.value)}
+            ></textarea>
+          </div>
+          <button type="submit">Submit</button>
+        </form>
+        <div>
+          
+        </div>
       </div>
     </div>
   );
